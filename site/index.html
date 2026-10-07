@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>리조트피플 플레이스 리포트</title>
+<style>
+/* Layout: 헤더 → 지점 카드 그리드(요약) → 선택 지점 상세(키워드 탭 · 지표 · 추이 그래프 · 일별 표) */
+@font-face{font-family:"Pretendard";font-weight:300;font-display:swap;src:url("fonts/Pretendard-Light.subset.woff2") format("woff2")}
+@font-face{font-family:"Pretendard";font-weight:400;font-display:swap;src:url("fonts/Pretendard-Regular.subset.woff2") format("woff2")}
+@font-face{font-family:"Pretendard";font-weight:500;font-display:swap;src:url("fonts/Pretendard-Medium.subset.woff2") format("woff2")}
+@font-face{font-family:"Pretendard";font-weight:600;font-display:swap;src:url("fonts/Pretendard-SemiBold.subset.woff2") format("woff2")}
+@font-face{font-family:"Pretendard";font-weight:700;font-display:swap;src:url("fonts/Pretendard-Bold.subset.woff2") format("woff2")}
+:root{
+  --bg:#FBF5F2; --surface:#FFFFFF; --soft:#EFE6E1; --ink:#332F2B; --sub:#58524D; --mute:#776D64;
+  --line:#DBD2CD; --accent:#AA776A; --accent-soft:#F3E6E0; --taupe:#9E9189;
+  --up:#2F7A57; --up-soft:#E2F0E8; --down:#B0503A; --down-soft:#F6E2DC; --warn:#946A1E; --chip:#FFF390; --warn-soft:#F4EAD3;
+  color-scheme:light;
+  --font:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+}
+*{box-sizing:border-box}
+img{max-width:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.55;letter-spacing:-0.015em;-webkit-font-smoothing:antialiased;word-break:keep-all}
+.wrap{max-width:1200px;margin:0 auto;padding:0 20px;padding-block:28px 64px}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+
+/* header */
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;padding-bottom:22px;border-bottom:1px solid var(--line)}
+.eyebrow{font-size:12px;letter-spacing:.14em;color:var(--mute);font-weight:500}
+h1{margin:8px 0 0;font-size:clamp(26px,4vw,36px);font-weight:700;letter-spacing:-0.04em;line-height:1.2;text-wrap:balance}
+.meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-size:13px;color:var(--sub);text-align:right}
+.meta b{font-weight:600;color:var(--ink)}
+.draft{display:inline-block;font-size:11.5px;color:var(--accent);border:1px solid var(--accent);border-radius:3px;padding:1px 7px;letter-spacing:.04em}
+
+/* section heads */
+.sh{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:34px 0 14px}
+.sh h2{margin:0;font-size:18px;font-weight:600;letter-spacing:-0.03em}
+.sh span{font-size:13px;color:var(--mute)}
+
+/* branch cards */
+.groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 16px}
+.grp{min-width:0}
+.grp.wide{grid-column:1/-1}
+.gh{display:flex;align-items:baseline;gap:8px;margin:0 0 10px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.gh h3{margin:0;font-size:14px;font-weight:600;letter-spacing:-0.02em}
+.gh span{font-size:12px;color:var(--mute)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.bc{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px 16px 14px;text-align:left;display:flex;flex-direction:column;gap:10px;min-width:0;transition:border-color .15s}
+.bc:hover{border-color:var(--taupe)}
+.bc[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.bc-top{display:flex;align-items:center;gap:8px}
+.code{font-size:12px;font-weight:600;color:var(--ink);background:var(--chip);border-radius:4px;padding:2px 7px}
+.bname{font-size:13px;color:var(--sub);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.bc-mid{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.kw{font-size:13px;color:var(--mute)}
+.rank{font-size:30px;font-weight:300;letter-spacing:-0.03em;line-height:1}
+.rank small{font-size:14px;font-weight:400;margin-left:2px;color:var(--sub)}
+.spark{width:100px;height:36px;flex:none}
+.bc-bot{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12.5px;color:var(--sub)}
+.chip{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:600;border-radius:999px;padding:2px 8px}
+.chip.up{color:var(--up);background:var(--up-soft)}
+.chip.down{color:var(--down);background:var(--down-soft)}
+.chip.flat{color:var(--mute);background:var(--soft)}
+.dot{color:var(--line)}
+
+/* detail */
+.detail{margin-top:30px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:24px}
+.dh{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.dh h2{margin:6px 0 0;font-size:22px;font-weight:600;letter-spacing:-0.03em}
+.dh p{margin:4px 0 0;font-size:13px;color:var(--mute)}
+.seg{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.seg button{border:0;background:transparent;padding:6px 14px;font-size:13px;color:var(--sub)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface);font-weight:500}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:18px}
+.tab{border:1px solid var(--line);background:transparent;border-radius:999px;padding:6px 14px;font-size:13.5px;color:var(--ink)}
+.tab:hover{border-color:var(--taupe)}
+.tab[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}
+.tab.wait{border-style:dashed;color:var(--mute);cursor:default}
+.tab.wait small{font-size:11px;margin-left:4px}
+.cbox{border:1px solid var(--line);border-radius:8px;padding:16px 18px 12px;min-width:0;margin-top:16px}
+.ct{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.ct h3{margin:0;font-size:14.5px;font-weight:600}
+.ct .cur{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-top:6px}
+.ct .big{font-size:28px;font-weight:300;letter-spacing:-0.03em;line-height:1.1}
+.ct .big small{font-size:13px;color:var(--sub);font-weight:400;margin-left:2px}
+.ct .s{font-size:12.5px;color:var(--sub);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.seg.sm button{padding:5px 11px;font-size:12.5px}
+.cv{position:relative;height:250px;margin-top:12px}
+.revs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}
+.rv{border:1px solid var(--line);border-radius:8px;padding:16px 18px;min-width:0;display:flex;flex-direction:column;gap:14px}
+.rv-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.rv-h h3{margin:0;font-size:14.5px;font-weight:600}
+.rv-h .big{font-size:28px;font-weight:300;letter-spacing:-0.03em;line-height:1}
+.rv-h .big small{font-size:13px;color:var(--sub);font-weight:400;margin-left:2px}
+.incs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.incs div{background:var(--surface);padding:9px 6px;text-align:center;display:flex;flex-direction:column;gap:2px;min-width:0}
+.incs span{font-size:11.5px;color:var(--mute)}
+.incs b{font-size:16px;font-weight:500}
+.incs b.pos{color:var(--up)}
+.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.days div{background:var(--soft);border-radius:5px;padding:6px 2px;text-align:center;display:flex;flex-direction:column;gap:1px;min-width:0}
+.days span{font-size:11px;color:var(--mute)}
+.days b{font-size:13.5px;font-weight:500}
+.days .zero b{color:var(--mute);font-weight:400}
+.rv-cap{font-size:12px;color:var(--mute);margin-bottom:-6px}
+details{margin-top:18px;border-top:1px solid var(--line);padding-top:14px}
+summary{cursor:pointer;font-size:13.5px;color:var(--sub)}
+.tbl{overflow-x:auto;margin-top:10px;max-height:360px;overflow-y:auto}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:13px;font-variant-numeric:tabular-nums}
+th,td{padding:8px 10px;border-bottom:1px solid var(--soft);text-align:right}
+th:first-child,td:first-child{text-align:left}
+th{position:sticky;top:0;background:var(--surface);color:var(--mute);font-weight:500;font-size:12px}
+.foot{margin-top:56px;display:flex;justify-content:center}
+.foot img{width:140px;height:auto;opacity:.85}
+
+/* feedback */
+.lv{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.lv.r{color:var(--down);background:var(--down-soft)}
+.lv.y{color:var(--warn);background:var(--warn-soft)}
+.lv.g{color:var(--up);background:var(--up-soft)}
+.fbx{margin-top:16px;background:var(--accent-soft);border-radius:8px;padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.fb-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.fb-h h3{margin:0;font-size:14.5px;font-weight:600}
+.fb-d{font-size:12px;color:var(--mute);margin-left:auto}
+.fbx ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:10px 20px}
+.fbx li{display:flex;gap:10px;align-items:flex-start;min-width:0}
+.fbx li div{min-width:0}
+.fbx li b{font-size:12.5px;font-weight:600;color:var(--ink)}
+.fbx li p{margin:2px 0 0;font-size:13px;color:var(--sub);line-height:1.5}
+.mk{flex:none;width:8px;height:8px;border-radius:50%;margin-top:6px}
+.mk.r{background:var(--down)}.mk.y{background:var(--warn)}.mk.g{background:var(--up)}
+.fb-note{border-top:1px dashed var(--line);padding-top:10px;display:flex;flex-direction:column;gap:3px}
+.fb-note p{margin:0;font-size:12px;color:var(--mute)}
+.fbx details.fb-rule{margin-top:0;border-top:1px solid var(--line);padding-top:10px}
+.fb-rule summary{font-size:12.5px}
+.fb-rule .rule-t{margin-top:8px;display:flex;flex-direction:column;gap:5px;font-size:12.5px;color:var(--sub)}
+.fb-rule p{margin:0}
+.fb-rule b{color:var(--ink);font-weight:600;margin-right:6px}
+@media (max-width:760px){.groups{grid-template-columns:minmax(0,1fr)}.grp.wide{grid-column:auto}.revs{grid-template-columns:minmax(0,1fr)}.cv{height:220px}.detail{padding:18px 14px}.meta{align-items:flex-start;text-align:left}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">RESORT PEOPLE · NAVER PLACE</div>
+      <h1>지점별 플레이스 순위 리포트</h1>
+    </div>
+    <div class="meta">
+      <span>기준일 <b class="num" id="asof"></b></span>
+      <span>매일 오전 전날 데이터 자동 반영</span>
+    </div>
+  </header>
+
+  <div class="sh"><h2>지점 한눈에 보기</h2><span>대표 키워드 순위 · 7일 전 대비 · 최근 7일 리뷰 증가</span></div>
+  <div class="groups" id="cards"></div>
+
+  <section class="detail" id="detail" aria-live="polite"></section>
+
+  <footer class="foot"><img src="logo.png" alt="resort people" width="140" height="27"></footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="data.js"></script>
+<script>
+const CATS = [
+  { id: 'L', name: '라이프스타일 클럽', wide: false },
+  { id: 'A', name: '애슬레틱 클럽', wide: false },
+  { id: 'S', name: '샤머니짐', wide: true },
+  { id: 'R', name: '리조트랩', wide: false },
+];
+const BR = [
+  {cat:'L', code:'F목동', name:'라이프스타일 클럽 현대백화점 목동', kw:['목동 헬스장','목동 PT','오목교 헬스장','오목교 PT'], grp:'F목동'},
+  {cat:'L', code:'F동래', name:'라이프스타일 클럽 롯데백화점 동래', kw:['동래 헬스장','동래 PT'], grp:'F동래'},
+  {cat:'A', code:'F대전', name:'애슬레틱 클럽 롯데백화점 대전', kw:['대전 헬스장','괴정동 헬스장','탄방동 헬스장'], grp:'F대전'},
+  {cat:'A', code:'F일산', name:'애슬레틱 클럽 롯데백화점 일산', kw:['일산 헬스장','정발산 헬스장','장항동 헬스장'], grp:'F일산'},
+  {cat:'S', code:'S의왕', name:'샤머니짐 의왕역점', kw:['의왕역 헬스장','의왕역 PT'], grp:'F의왕'},
+  {cat:'S', code:'S군포', name:'리조트휘트니스 군포부곡점', kw:['의왕역 헬스장','의왕역 PT'], grp:'F군포'},
+  {cat:'S', code:'S송도', name:'샤머니짐 송도점', kw:['송도 헬스장','송도 PT'], grp:'F송도'},
+  {cat:'S', code:'S구디', name:'리조트휘트니스 구로디지털점', kw:['구디 헬스장','구로디지털단지 헬스장'], grp:'F구디'},
+  {cat:'S', code:'S동대문', name:'샤머니짐 던던 동대문점', kw:['동대문 헬스장','을지로 헬스장'], grp:'F동대문'},
+  {cat:'R', code:'L메타', name:'리조트랩 메타폴리스점', kw:['동탄 필라테스','동탄 요가','반송동 필라테스','반송동 요가'], grp:'L타임'},
+  {cat:'R', code:'L꼬모', name:'리조트랩 레이크꼬모점', kw:['동탄 필라테스','동탄 요가','송동 필라테스','송동 요가'], grp:'L꼬모'},
+];
+
+// decode
+const dec = s => { let p = null; return s.split(',').map(t => { if (t === 'x') return null; const v = p === null ? +t : p + (+t || 0); p = v; return v; }); };
+const SERIES = {};
+let DATES = [];
+window.RANK_RAW.trim().split('\n').forEach(line => {
+  const f = line.split('|');
+  const ranks = f[5].split(',').map(x => x === 'x' ? null : +x);
+  const start = new Date(f[3] + 'T00:00:00');
+  const dates = ranks.map((_, i) => { const d = new Date(start); d.setDate(d.getDate() + i); return d; });
+  if (dates.length > DATES.length) DATES = dates;
+  SERIES[f[1] + '|' + f[2]] = { rank: ranks, blog: dec(f[6]), visit: dec(f[7]), search: dec(f[8]) };
+});
+const fmtD = d => `${d.getMonth()+1}.${String(d.getDate()).padStart(2,'0')}`;
+const LAST = DATES.length - 1;
+document.getElementById('asof').textContent = `${DATES[LAST].getFullYear()}.${String(DATES[LAST].getMonth()+1).padStart(2,'0')}.${String(DATES[LAST].getDate()).padStart(2,'0')}`;
+
+const ser = (b, k) => SERIES[b.grp + '|' + k];
+const tracked = b => b.kw.filter(k => ser(b, k));
+const nf = n => n == null ? '–' : n.toLocaleString('ko-KR');
+const back = (arr, n) => { for (let i = arr.length - 1 - n; i >= 0; i--) if (arr[i] != null) return arr[i]; return null; };
+function rankChip(s, days = 7) {
+  const now = s.rank[LAST], prev = back(s.rank, days);
+  if (now == null || prev == null) return '<span class="chip flat">–</span>';
+  const d = prev - now;
+  if (d > 0) return `<span class="chip up" aria-label="${d}계단 상승">▲ ${d}</span>`;
+  if (d < 0) return `<span class="chip down" aria-label="${-d}계단 하락">▼ ${-d}</span>`;
+  return '<span class="chip flat" aria-label="변동 없음">– 0</span>';
+}
+const inc = (arr, days) => { const a = arr[LAST], b = back(arr, days); return a == null || b == null ? null : a - b; };
+const plus = n => n == null ? '–' : (n > 0 ? '+' : '') + n.toLocaleString('ko-KR');
+
+function spark(arr) {
+  const v = arr.slice(-30), W = 100, H = 36, pad = 3;
+  const vals = v.filter(x => x != null); const mn = Math.min(...vals), mx = Math.max(...vals);
+  const y = r => pad + (mx === mn ? (H - 2*pad)/2 : (r - mn) / (mx - mn) * (H - 2*pad)); // 순위 작을수록 위
+  const x = i => pad + i * (W - 2*pad) / (v.length - 1);
+  const pts = v.map((r, i) => r == null ? null : [x(i), y(r)]).filter(Boolean);
+  const d = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+  const e = pts[pts.length - 1];
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" aria-hidden="true"><path d="${d}" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${e[0]}" cy="${e[1]}" r="2.6" fill="var(--accent)"/></svg>`;
+}
+
+let sel = 0, kwSel = null;
+const RANGES = [7, 14, 30, 60, 0]; // 0 = 전체
+const rng = { rank: 30, search: 30 };
+function card(b, i) {
+  const k = tracked(b)[0]; const s = ser(b, k);
+  return `<button class="bc" aria-pressed="${i === sel}" data-i="${i}">
+      <div class="bc-top"><span class="code">${b.code}</span><span class="bname">${b.name}</span></div>
+      <div class="bc-mid"><div><div class="kw">${k}</div><div class="rank num">${s.rank[LAST] ?? '–'}<small>위</small></div></div>${spark(s.rank)}</div>
+      <div class="bc-bot">${rankChip(s)}<span class="dot">|</span><span class="num">블로그 ${plus(inc(s.blog, 7))}</span><span class="num">영수증 ${plus(inc(s.visit, 7))}</span></div>
+    </button>`;
+}
+function cards() {
+  document.getElementById('cards').innerHTML = CATS.map(c => {
+    const items = BR.map((b, i) => [b, i]).filter(([b]) => b.cat === c.id);
+    return `<div class="grp${c.wide ? ' wide' : ''}"><div class="gh"><h3>${c.name}</h3><span>${items.length}개 지점</span></div><div class="grid">${items.map(([b, i]) => card(b, i)).join('')}</div></div>`;
+  }).join('');
+}
+document.getElementById('cards').addEventListener('click', e => {
+  const c = e.target.closest('.bc'); if (!c) return;
+  sel = +c.dataset.i; kwSel = null; cards(); detail();
+  document.getElementById('detail').scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start'});
+});
+
+const CH = {};
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const segHTML = key => `<div class="seg sm" role="group" aria-label="기간">${RANGES.map(r => `<button data-c="${key}" data-r="${r}" aria-pressed="${r === rng[key]}">${r ? r + '일' : '전체'}</button>`).join('')}</div>`;
+function revPanel(title, arr) {
+  const daily = [];
+  for (let i = LAST - 6; i <= LAST; i++) { const a = arr[i], p = arr[i - 1]; daily.push({ d: DATES[i], v: a == null || p == null ? null : a - p }); }
+  const cell = (lab, n) => `<div><span>${lab}</span><b class="num${n > 0 ? ' pos' : ''}">${plus(n)}</b></div>`;
+  return `<div class="rv">
+    <div class="rv-h"><h3>${title}</h3><span class="big num">${nf(arr[LAST])}<small>개</small></span></div>
+    <div class="rv-cap">기간별 증가</div>
+    <div class="incs">${cell('전일', inc(arr, 1))}${cell('7일', inc(arr, 7))}${cell('14일', inc(arr, 14))}${cell('30일', inc(arr, 30))}${cell('60일', inc(arr, 60))}</div>
+    <div class="rv-cap">최근 7일 일별 증가</div>
+    <div class="days">${daily.map(x => `<div class="${!x.v ? 'zero' : ''}"><span>${fmtD(x.d)}</span><b class="num">${plus(x.v)}</b></div>`).join('')}</div>
+  </div>`;
+}
+function detail() {
+  const b = BR[sel]; const tr = tracked(b);
+  if (!kwSel || !tr.includes(kwSel)) kwSel = tr[0];
+  const s = ser(b, kwSel);
+  const el = document.getElementById('detail');
+  el.innerHTML = `
+    <div class="dh">
+      <div><span class="code">${b.code}</span><h2>${b.name}</h2><p>키워드를 선택하면 순위와 리뷰 수가 바뀝니다.</p></div>
+    </div>
+    <div class="tabs" role="group" aria-label="키워드">${b.kw.map(k => ser(b, k)
+      ? `<button class="tab" data-k="${k}" aria-pressed="${k === kwSel}">${k}</button>`
+      : `<span class="tab wait" title="애드로그 미등록">${k}<small>추적 대기</small></span>`).join('')}</div>
+    ${fbHTML(b)}
+    <div class="cbox">
+      <div class="ct"><div><h3>플레이스 순위</h3><div class="cur"><span class="big num">${s.rank[LAST] ?? '–'}<small>위</small></span><span class="s">7일 전 대비 ${rankChip(s, 7)} 30일 전 대비 ${rankChip(s, 30)}</span></div></div>${segHTML('rank')}</div>
+      <div class="cv"><canvas id="c-rank" role="img" aria-label="${kwSel} 순위 추이"></canvas></div>
+    </div>
+    <div class="revs">${revPanel('블로그 리뷰', s.blog)}${revPanel('영수증 리뷰', s.visit)}</div>
+    <div class="cbox">
+      <div class="ct"><div><h3>월 검색량</h3><div class="cur"><span class="big num">${nf(s.search[LAST])}<small>건</small></span><span class="s num">30일 전 ${nf(back(s.search, 30))}건</span></div></div>${segHTML('search')}</div>
+      <div class="cv"><canvas id="c-search" role="img" aria-label="${kwSel} 월 검색량 추이"></canvas></div>
+    </div>
+    <details><summary>일별 표로 보기</summary><div class="tbl"><table><thead><tr><th>날짜</th><th>순위</th><th>블로그 리뷰</th><th>영수증 리뷰</th><th>월 검색량</th></tr></thead><tbody>
+      ${DATES.map((d, i) => i).reverse().map(i => `<tr><td>${DATES[i].getFullYear()}.${fmtD(DATES[i])}</td><td>${s.rank[i] ?? '–'}</td><td>${nf(s.blog[i])}</td><td>${nf(s.visit[i])}</td><td>${nf(s.search[i])}</td></tr>`).join('')}
+    </tbody></table></div></details>`;
+  draw('rank', s); draw('search', s);
+}
+document.getElementById('detail').addEventListener('click', e => {
+  const t = e.target.closest('[data-k]'); if (t) { kwSel = t.dataset.k; detail(); return; }
+  const r = e.target.closest('[data-r]'); if (!r) return;
+  const key = r.dataset.c; rng[key] = +r.dataset.r;
+  r.parentNode.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === r));
+  draw(key, ser(BR[sel], kwSel));
+});
+
+function draw(key, s) {
+  if (CH[key]) CH[key].destroy();
+  const n = rng[key] || DATES.length;
+  const from = Math.max(0, DATES.length - n);
+  const labels = DATES.slice(from).map(fmtD);
+  const mute = css('--mute'), line = css('--line'), acc = css('--accent'), surf = css('--surface');
+  Chart.defaults.font.family = css('--font'); Chart.defaults.font.size = 11.5; Chart.defaults.color = mute;
+  const dots = n <= 14;
+  const isRank = key === 'rank';
+  const data = (isRank ? s.rank : s.search).slice(from);
+  const vals = data.filter(x => x != null);
+  const y = isRank
+    ? { reverse: true, min: 1, suggestedMax: Math.max(...vals) + 1, grid: { color: line, drawTicks: false }, border: { display: false }, ticks: { color: mute, padding: 8, precision: 0, callback: v => v + '위' } }
+    : { grace: '8%', grid: { color: line, drawTicks: false }, border: { display: false }, ticks: { color: mute, padding: 8, precision: 0, callback: v => v.toLocaleString('ko-KR') } };
+  CH[key] = new Chart(document.getElementById('c-' + key), {
+    type: 'line',
+    data: { labels, datasets: [{ data, borderColor: acc, borderWidth: 2, tension: isRank ? 0 : 0.25, spanGaps: true,
+      pointRadius: data.map((_, i) => dots || i === data.length - 1 ? 3.5 : 0), pointBackgroundColor: acc, pointBorderColor: surf, pointBorderWidth: dots ? 1.5 : 0, pointHoverRadius: 5,
+      fill: isRank ? false : { target: 'origin' }, backgroundColor: acc + '1F' }] },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: css('--ink'), titleColor: surf, bodyColor: surf, padding: 10, displayColors: false, cornerRadius: 6,
+        callbacks: { label: c => isRank ? `${c.raw}위` : `월 ${nf(c.raw)}건` } } },
+      scales: { x: { grid: { display: false }, border: { color: line }, ticks: { color: mute, maxRotation: 0, autoSkipPadding: 18 } }, y },
+    },
+  });
+}
+
+// ── 피드백: 판정 기준 ──
+const RULE = { rcpGood: 5, blogGood: 20, rankMove: 3, weakRank: 11, topRank: 3, searchPct: 20 };
+const LV = { r: { t: '주의', w: 0 }, y: { t: '보완', w: 1 }, g: { t: '유지', w: 2 } };
+const avgWin = (a, from, to) => { const v = a.slice(Math.max(0, from), to + 1).filter(x => x != null); return v.length >= 4 ? v.reduce((p, c) => p + c, 0) / v.length : null; };
+const f1 = n => (Math.round(n * 10) / 10).toString();
+function branchFeedback(b) {
+  const tr = tracked(b); const s0 = ser(b, tr[0]);
+  const lines = [];
+  // 영수증 리뷰 (지점 단위)
+  const r7 = inc(s0.visit, 7), r30 = inc(s0.visit, 30);
+  if (r30 != null && r30 <= 0) lines.push({ lv: 'r', k: '영수증 리뷰', t: `30일간 증가 없음 · 리뷰 안내 동선 점검(카운터 안내 · QR 비치) · 다음 주 5개 이상 목표` });
+  else if (r7 != null && r7 < RULE.rcpGood) lines.push({ lv: 'y', k: '영수증 리뷰', t: `최근 7일 ${r7 > 0 ? r7 + '개 증가' : r7 < 0 ? -r7 + '개 감소' : '증가 없음'} · 다음 주 5개 이상 목표` });
+  else if (r7 != null) lines.push({ lv: 'g', k: '영수증 리뷰', t: `최근 7일 ${r7}개 증가 · 현행 유지` });
+  // 블로그 리뷰 (지점 단위)
+  const b30 = inc(s0.blog, 30);
+  if (b30 != null && b30 <= 0) lines.push({ lv: 'r', k: '블로그 리뷰', t: `최근 30일 ${b30 < 0 ? -b30 + '건 감소' : '증가 없음'} · 체험단 · 협찬 포스팅 검토 · 월 20건 이상 목표` });
+  else if (b30 != null && b30 < RULE.blogGood) lines.push({ lv: 'y', k: '블로그 리뷰', t: `최근 30일 ${b30}건 증가 · 월 20건 이상 목표` });
+  else if (b30 != null) lines.push({ lv: 'g', k: '블로그 리뷰', t: `최근 30일 ${b30}건 증가 · 현행 유지` });
+  // 플레이스 순위 (키워드 단위)
+  const drop = [], rise = [], weak = [], wait = [];
+  let top = 0;
+  tr.forEach(k => {
+    const r = ser(b, k).rank; const now = r[LAST];
+    const cur = avgWin(r, LAST - 6, LAST), prev = avgWin(r, LAST - 13, LAST - 7);
+    if (cur == null || prev == null) wait.push(k);
+    else if (cur - prev >= RULE.rankMove) drop.push(`${k} ${f1(prev)}→${f1(cur)}위`);
+    else if (prev - cur >= RULE.rankMove) rise.push(`${k} ${f1(prev)}→${f1(cur)}위`);
+    if (now != null && now >= RULE.weakRank) weak.push(`${k} ${now}위`);
+    if (now != null && now <= RULE.topRank && cur != null && cur <= RULE.topRank) top++;
+  });
+  if (drop.length) lines.push({ lv: 'r', k: '순위 하락', t: `${drop.join(', ')}(7일 평균) · 최근 리뷰 · 사진 · 소식 업데이트 점검` });
+  if (weak.length) lines.push({ lv: 'y', k: '노출 약함', t: `${weak.join(', ')} · 11위 이하 키워드` });
+  if (rise.length) lines.push({ lv: 'g', k: '순위 상승', t: `${rise.join(', ')}(7일 평균) · 최근 활동 유지` });
+  if (!drop.length && !weak.length && !rise.length) lines.push({ lv: 'g', k: '플레이스 순위', t: top ? `상위 3위권 키워드 ${top}개 · 현행 유지` : '큰 변동 없음 · 현행 유지' });
+  // 참고: 검색량 · 수집 중
+  const info = [];
+  tr.forEach(k => { const a = ser(b, k).search; const now = a[LAST], ago = back(a, 30); if (now != null && ago) { const p = Math.round((now - ago) / ago * 100); if (Math.abs(p) >= RULE.searchPct) info.push(`${k} ${p > 0 ? p + '% 증가' : -p + '% 감소'}`); } });
+  const notes = [];
+  if (info.length) notes.push(`검색량 변화(30일 전 대비) · ${info.slice(0, 3).join(', ')}`);
+  if (wait.length) notes.push(`추이 판정 대기 · ${wait.join(', ')} (2주치 수집 후)`);
+  const lv = lines.reduce((m, l) => LV[l.lv].w < LV[m].w ? l.lv : m, 'g');
+  return { lv, lines, notes };
+}
+function fbHTML(b) {
+  const x = branchFeedback(b);
+  return `<div class="fbx">
+    <div class="fb-h"><h3>피드백</h3><span class="lv ${x.lv}">${LV[x.lv].t}</span><span class="fb-d">기준일 ${fmtD(DATES[LAST])} · 데이터 갱신 시 자동 판정</span></div>
+    <ul>${x.lines.map(l => `<li><span class="mk ${l.lv}" aria-label="${LV[l.lv].t}"></span><div><b>${l.k}</b><p>${l.t}</p></div></li>`).join('')}</ul>
+    ${x.notes.length ? `<div class="fb-note">${x.notes.map(n => `<p>${n}</p>`).join('')}</div>` : ''}
+    <details class="fb-rule"><summary>판정 기준</summary><div class="rule-t">
+      <p><b>영수증 리뷰</b> 최근 7일 기준 · 5개 이상 유지 · 0~4개 보완(다음 주 5개 이상 목표) · 30일간 증가 없음 주의</p>
+      <p><b>블로그 리뷰</b> 최근 30일 기준 · 20건 이상 유지 · 1~19건 보완(월 20건 이상 목표) · 증가 없음 주의(체험단 · 협찬 검토)</p>
+      <p><b>플레이스 순위</b> 키워드별 최근 7일 평균을 직전 7일과 비교 · 3계단 이상 하락 주의 · 현재 11위 이하 보완 · 3계단 이상 상승은 상승 표시</p>
+      <p><b>월 검색량</b> 30일 전 대비 20% 이상 변동 시 참고 표시 · 판정에는 반영하지 않음</p>
+    </div></details>
+  </div>`;
+}
+
+cards(); detail();
+</script>
+</body>
+</html>

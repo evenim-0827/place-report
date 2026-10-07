@@ -1,0 +1,152 @@
+[
+  {
+    "api_no": 258827,
+    "group": "F목동",
+    "label": "목동 헬스장"
+  },
+  {
+    "api_no": 258838,
+    "group": "F목동",
+    "label": "목동 PT"
+  },
+  {
+    "api_no": 261806,
+    "group": "F목동",
+    "label": "오목교 헬스장"
+  },
+  {
+    "api_no": 3101132,
+    "group": "F목동",
+    "label": "오목교 PT"
+  },
+  {
+    "api_no": 1488531,
+    "group": "F동래",
+    "label": "동래 헬스장"
+  },
+  {
+    "api_no": 3101136,
+    "group": "F동래",
+    "label": "동래 PT"
+  },
+  {
+    "api_no": 258819,
+    "group": "F대전",
+    "label": "대전 헬스장"
+  },
+  {
+    "api_no": 258823,
+    "group": "F대전",
+    "label": "괴정동 헬스장"
+  },
+  {
+    "api_no": 318161,
+    "group": "F대전",
+    "label": "탄방동 헬스장"
+  },
+  {
+    "api_no": 271110,
+    "group": "F일산",
+    "label": "일산 헬스장"
+  },
+  {
+    "api_no": 347213,
+    "group": "F일산",
+    "label": "정발산 헬스장"
+  },
+  {
+    "api_no": 3101076,
+    "group": "F일산",
+    "label": "장항동 헬스장"
+  },
+  {
+    "api_no": 261829,
+    "group": "F의왕",
+    "label": "의왕역 헬스장"
+  },
+  {
+    "api_no": 3101178,
+    "group": "F의왕",
+    "label": "의왕역 PT"
+  },
+  {
+    "api_no": 618162,
+    "group": "F군포",
+    "label": "의왕역 헬스장"
+  },
+  {
+    "api_no": 3101144,
+    "group": "F군포",
+    "label": "의왕역 PT"
+  },
+  {
+    "api_no": 258806,
+    "group": "F송도",
+    "label": "송도 헬스장"
+  },
+  {
+    "api_no": 258807,
+    "group": "F송도",
+    "label": "송도 PT"
+  },
+  {
+    "api_no": 258810,
+    "group": "F구디",
+    "label": "구디 헬스장"
+  },
+  {
+    "api_no": 3101092,
+    "group": "F구디",
+    "label": "구로디지털단지 헬스장"
+  },
+  {
+    "api_no": 479406,
+    "group": "F동대문",
+    "label": "동대문 헬스장"
+  },
+  {
+    "api_no": 479437,
+    "group": "F동대문",
+    "label": "을지로 헬스장"
+  },
+  {
+    "api_no": 258836,
+    "group": "L타임",
+    "label": "동탄 필라테스"
+  },
+  {
+    "api_no": 292033,
+    "group": "L타임",
+    "label": "동탄 요가"
+  },
+  {
+    "api_no": 292031,
+    "group": "L타임",
+    "label": "반송동 필라테스"
+  },
+  {
+    "api_no": 3101095,
+    "group": "L타임",
+    "label": "반송동 요가"
+  },
+  {
+    "api_no": 258834,
+    "group": "L꼬모",
+    "label": "동탄 필라테스"
+  },
+  {
+    "api_no": 292029,
+    "group": "L꼬모",
+    "label": "동탄 요가"
+  },
+  {
+    "api_no": 292030,
+    "group": "L꼬모",
+    "label": "송동 필라테스"
+  },
+  {
+    "api_no": 3101100,
+    "group": "L꼬모",
+    "label": "송동 요가"
+  }
+]

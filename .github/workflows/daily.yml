@@ -1,0 +1,67 @@
+name: 플레이스 리포트 수집
+
+on:
+  schedule:
+    - cron: "0 21 * * *"   # 매일 06:00 KST (UTC 21:00). 깃허브 사정으로 조금 늦게 시작될 수 있음
+  workflow_dispatch:         # Actions 탭에서 수동 실행
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: place-report
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 패키지 설치
+        run: pip install requests beautifulsoup4
+
+      - name: 애드로그 데이터 수집
+        env:
+          ADLOG_ID: ${{ secrets.ADLOG_ID }}
+          ADLOG_PW: ${{ secrets.ADLOG_PW }}
+        run: python scraper/collect.py
+
+      - name: 수집 결과 저장
+        run: |
+          git config user.name "place-report-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/history.json site/data.js
+          if git diff --cached --quiet; then
+            echo "변경 사항 없음"
+          else
+            git commit -m "data: $(TZ=Asia/Seoul date +%Y-%m-%d) 수집"
+            git push
+          fi
+
+  deploy:
+    needs: collect
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
