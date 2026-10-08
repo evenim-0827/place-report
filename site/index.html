@@ -168,7 +168,7 @@ th{position:sticky;top:0;background:var(--surface);color:var(--mute);font-weight
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="data.js"></script>
+<script>/* 매일 갱신되는 데이터를 캐시 없이 불러오기 */document.write('<script src="data.js?t='+Date.now()+'"><\/script>');</script>
 <script>
 const CATS = [
   { id: 'L', name: '라이프스타일 클럽', wide: false },
