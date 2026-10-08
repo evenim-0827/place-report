@@ -2,7 +2,7 @@ name: 플레이스 리포트 수집
 
 on:
   schedule:
-    - cron: "0 21 * * *"   # 매일 06:00 KST (UTC 21:00). 깃허브 사정으로 조금 늦게 시작될 수 있음
+    - cron: "0 6 * * *"    # 매일 15:00 KST (UTC 06:00). 애드로그가 13:40 이후 당일 순위를 갱신하므로 그 뒤에 수집
   workflow_dispatch:         # Actions 탭에서 수동 실행
 
 permissions:
