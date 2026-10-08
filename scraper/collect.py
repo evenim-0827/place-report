@@ -67,12 +67,16 @@ def parse_stats(html, today):
         b = el.find("b")
         rm = re.search(r"(\d+)\s*위", b.get_text()) if b else None
         sel = lambda c: el.select_one(c).get_text() if el.select_one(c) else None
-        out[key] = [
+        vals = [
             int(rm.group(1)) if rm else None,
             num(sel(".blog_disp_area")),
             num(sel(".visit_disp_area")),
             num(sel(".search_disp_area")),
         ]
+        # 애드로그는 당일 칸을 빈 값으로 먼저 만들어 둔다(13:40 이후 갱신). 빈 칸은 기록하지 않는다.
+        if all(v is None for v in vals):
+            continue
+        out[key] = vals
     return out
 
 
@@ -204,7 +208,8 @@ def main():
                 h["days"].setdefault(k, v)
             log(f'  이전 기록 {len(older)}일 보강: {c["label"]}')
         h["days"].update(recent)
-        h["days"] = {k: h["days"][k] for k in sorted(h["days"]) if k >= START}
+        h["days"] = {k: h["days"][k] for k in sorted(h["days"])
+                     if k >= START and any(v is not None for v in h["days"][k])}
         updated += 1
 
     if missing:

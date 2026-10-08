@@ -203,7 +203,11 @@ window.RANK_RAW.trim().split('\n').forEach(line => {
   SERIES[f[1] + '|' + f[2]] = { rank: ranks, blog: dec(f[6]), visit: dec(f[7]), search: dec(f[8]) };
 });
 const fmtD = d => `${d.getMonth()+1}.${String(d.getDate()).padStart(2,'0')}`;
-const LAST = DATES.length - 1;
+// 값이 하나도 없는 마지막 날짜(애드로그 당일 빈 칸)는 잘라낸다
+let LAST = DATES.length - 1;
+while (LAST > 0 && !Object.values(SERIES).some(x => x.rank[LAST] != null || x.blog[LAST] != null)) LAST--;
+DATES = DATES.slice(0, LAST + 1);
+Object.values(SERIES).forEach(x => ['rank', 'blog', 'visit', 'search'].forEach(k => { x[k] = x[k].slice(0, LAST + 1); }));
 document.getElementById('asof').textContent = `${DATES[LAST].getFullYear()}.${String(DATES[LAST].getMonth()+1).padStart(2,'0')}.${String(DATES[LAST].getDate()).padStart(2,'0')}`;
 
 const ser = (b, k) => SERIES[b.grp + '|' + k];
@@ -228,6 +232,7 @@ function spark(arr) {
   const x = i => pad + i * (W - 2*pad) / (v.length - 1);
   const pts = v.map((r, i) => r == null ? null : [x(i), y(r)]).filter(Boolean);
   const d = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+  if (!pts.length) return '<svg class="spark" viewBox="0 0 100 36" aria-hidden="true"></svg>';
   const e = pts[pts.length - 1];
   return `<svg class="spark" viewBox="0 0 ${W} ${H}" aria-hidden="true"><path d="${d}" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${e[0]}" cy="${e[1]}" r="2.6" fill="var(--accent)"/></svg>`;
 }
